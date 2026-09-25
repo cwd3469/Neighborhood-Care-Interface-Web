@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(find node_modules/next/dist -name *.md -maxdepth 3 v)",
+      "Bash(pnpm build:*)",
+      "Bash(pnpm tsc:*)",
+      "Skill(bkit:pdca)"
+    ]
+  }
+}

@@ -1,8 +1,11 @@
 // Design Ref: §3.1 — Next.js Route Handler 프록시 호출
 // Plan SC: SC-02, SC-03
 
+import {api} from "@shared/api";
+
+// grant_type , username , password
 export interface LoginRequest {
-  email: string
+  username: string
   password: string
 }
 
@@ -12,16 +15,16 @@ export interface LoginResult {
 }
 
 export async function loginApi(body: LoginRequest): Promise<LoginResult> {
-  const res = await fetch('/api/auth/login', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
+  const res = await api.instance.post('/login', body , {
+    headers: {
+      "Content-Type":"application/x-www-form-urlencoded"
+    }
   })
 
-  if (!res.ok) {
-    const data = await res.json().catch(() => ({})) as { detail?: string }
-    return { ok: false, error: data.detail ?? '로그인에 실패했습니다.' }
+  if(res.status === 200){
+    
+    api.setAuthToken(`${res.data.token_type} 
+      ${res.data.access_token}`)
   }
-
   return { ok: true }
 }

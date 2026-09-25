@@ -1,7 +1,7 @@
-// Design Ref: §4 — HTTP 상태 코드 → ApiError 변환
-// Plan SC: R-08 — FastAPI 422 ValidationError { detail: [...] } 매핑
-
-import type { ApiError } from './types';
+// Design Ref: §4.2 — AxiosError → ApiError 변환
+// Plan SC: SC-04
+import type { AxiosError } from 'axios'
+import type { ApiError } from './types'
 
 const STATUS_CODE_MAP: Record<number, string> = {
   400: 'BAD_REQUEST',
@@ -10,32 +10,19 @@ const STATUS_CODE_MAP: Record<number, string> = {
   404: 'NOT_FOUND',
   422: 'VALIDATION_ERROR',
   500: 'INTERNAL_ERROR',
-};
+}
 
-/**
- * HTTP Response를 ApiError로 변환.
- * response.json()을 한 번 소비하므로 호출 후 body를 다시 읽을 수 없음.
- */
-export async function parseError(response: Response): Promise<ApiError> {
-  let detail: unknown = null;
-  let message = `HTTP ${response.status}`;
-
-  try {
-    const body = await response.json() as Record<string, unknown>;
-    detail = body.detail ?? body;
-    // FastAPI: detail이 문자열이면 그대로, 배열(422)이면 상태 코드 기반 메시지
-    message = typeof body.detail === 'string'
-      ? body.detail
-      : `HTTP ${response.status}`;
-  } catch {
-    // JSON 파싱 실패 시 statusText 사용
-    message = response.statusText || `HTTP ${response.status}`;
-  }
-
+export function parseAxiosError(err: AxiosError): ApiError {
+  const status = err.response?.status ?? 0
+  const body = err.response?.data as Record<string, unknown> | undefined
+  const detail = body?.detail ?? null
+  const message = typeof detail === 'string'
+    ? detail
+    : err.message || `HTTP ${status}`
   return {
-    status: response.status,
+    status,
     message,
     detail,
-    code: STATUS_CODE_MAP[response.status] ?? 'UNKNOWN_ERROR',
-  };
+    code: STATUS_CODE_MAP[status] ?? (status === 0 ? 'NETWORK_ERROR' : 'UNKNOWN_ERROR'),
+  }
 }

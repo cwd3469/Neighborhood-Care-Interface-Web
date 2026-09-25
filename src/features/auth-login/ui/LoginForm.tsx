@@ -4,18 +4,18 @@
 import { useLogin } from '../model/useLogin'
 
 export function LoginForm() {
-  const { login, isPending, error } = useLogin()
+  const { login, isPending, error } = useLogin();
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     const form = e.currentTarget
     const email = (form.elements.namedItem('email') as HTMLInputElement).value
     const password = (form.elements.namedItem('password') as HTMLInputElement).value
-    login({ email, password })
+    login({ username:email, password })
   }
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-4 w-full max-w-sm">
+    <form onSubmit={handleSubmit} className="flex flex-col gap-4 w-full max-w-sm ">
       <div className="flex flex-col gap-1">
         <label htmlFor="email" className="text-sm font-medium text-gray-700">
           이메일
@@ -23,11 +23,10 @@ export function LoginForm() {
         <input
           id="email"
           name="email"
-          type="email"
           required
           autoComplete="email"
           placeholder="example@email.com"
-          className="rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="rounded-md border border-gray-300 px-3 py-2 text-black focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
       </div>
 
@@ -42,7 +41,7 @@ export function LoginForm() {
           required
           autoComplete="current-password"
           placeholder="비밀번호 입력"
-          className="rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="rounded-md border border-gray-300 px-3 py-2 text-black focus:outline-none focus:ring-2 focus:ring-blue-500 "
         />
       </div>
 

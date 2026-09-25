@@ -1,6 +1,6 @@
 {
   "version": "3.0",
-  "lastUpdated": "2026-09-24T01:57:23.474Z",
+  "lastUpdated": "2026-09-25T03:11:43.370Z",
   "activeFeatures": [
     "patient",
     "caregiver",
@@ -29,9 +29,22 @@
     "schedules",
     "[scheduleId]",
     "admin-dashboard",
-    "[recordId]"
+    "[recordId]",
+    "me",
+    "signup",
+    "auth-signup"
   ],
   "primaryFeature": "patient",
+  "archivedFeatures": {
+    "shared-api-client-v2": {
+      "phase": "archived",
+      "matchRate": 100,
+      "iterationCount": 0,
+      "startedAt": "2026-09-24T00:00:00.000Z",
+      "archivedAt": "2026-09-25T00:00:00.000Z",
+      "archivedTo": "docs/archive/2026-09/shared-api-client-v2/"
+    }
+  },
   "features": {
     "patient": {
       "phase": "do",
@@ -107,9 +120,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-09-19T07:45:20.059Z",
-        "lastUpdated": "2026-09-23T08:38:14.164Z"
+        "lastUpdated": "2026-09-24T13:12:01.617Z"
       },
-      "lastFile": "/Users/timothy/Desktop/develop/systemNeighborhoodSeniorCare/web/src/entities/senior/api/index.ts"
+      "lastFile": "/Users/timothy/Desktop/develop/systemNeighborhoodSeniorCare/web/src/shared/api/query.ts"
     },
     "ui": {
       "phase": "do",
@@ -161,9 +174,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-09-23T04:30:24.100Z",
-        "lastUpdated": "2026-09-23T04:32:29.721Z"
+        "lastUpdated": "2026-09-25T00:33:52.599Z"
       },
-      "lastFile": "/Users/timothy/Desktop/develop/systemNeighborhoodSeniorCare/web/proxy.ts"
+      "lastFile": "/Users/timothy/Desktop/develop/systemNeighborhoodSeniorCare/web/app/providers.tsx"
     },
     "dashboard": {
       "phase": "do",
@@ -213,20 +226,20 @@
       "documents": {},
       "timestamps": {
         "started": "2026-09-23T04:30:52.727Z",
-        "lastUpdated": "2026-09-23T04:31:18.686Z"
+        "lastUpdated": "2026-09-25T03:11:43.370Z"
       },
-      "lastFile": "/Users/timothy/Desktop/develop/systemNeighborhoodSeniorCare/web/app/login/layout.tsx"
+      "lastFile": "/Users/timothy/Desktop/develop/systemNeighborhoodSeniorCare/web/app/login/page.tsx"
     },
     "auth-login": {
-      "phase": "act",
-      "phaseNumber": 5,
+      "phase": "do",
+      "phaseNumber": 3,
       "matchRate": null,
       "iterationCount": 0,
       "requirements": [],
       "documents": {},
       "timestamps": {
         "started": "2026-09-23T04:31:00.436Z",
-        "lastUpdated": "2026-09-23T04:39:59.648Z"
+        "lastUpdated": "2026-09-25T00:33:56.491Z"
       },
       "lastFile": "/Users/timothy/Desktop/develop/systemNeighborhoodSeniorCare/web/src/features/auth-login/index.ts",
       "previousPhase": "check",
@@ -404,6 +417,45 @@
         "lastUpdated": "2026-09-24T01:56:36.042Z"
       },
       "lastFile": "/Users/timothy/Desktop/develop/systemNeighborhoodSeniorCare/web/app/api/ai/summary/[recordId]/route.ts"
+    },
+    "me": {
+      "phase": "do",
+      "phaseNumber": 3,
+      "matchRate": null,
+      "iterationCount": 0,
+      "requirements": [],
+      "documents": {},
+      "timestamps": {
+        "started": "2026-09-25T00:33:30.906Z",
+        "lastUpdated": "2026-09-25T00:33:30.906Z"
+      },
+      "lastFile": "/Users/timothy/Desktop/develop/systemNeighborhoodSeniorCare/web/app/api/auth/me/route.ts"
+    },
+    "signup": {
+      "phase": "do",
+      "phaseNumber": 3,
+      "matchRate": null,
+      "iterationCount": 0,
+      "requirements": [],
+      "documents": {},
+      "timestamps": {
+        "started": "2026-09-25T03:10:54.080Z",
+        "lastUpdated": "2026-09-25T03:11:35.294Z"
+      },
+      "lastFile": "/Users/timothy/Desktop/develop/systemNeighborhoodSeniorCare/web/app/signup/layout.tsx"
+    },
+    "auth-signup": {
+      "phase": "do",
+      "phaseNumber": 3,
+      "matchRate": null,
+      "iterationCount": 0,
+      "requirements": [],
+      "documents": {},
+      "timestamps": {
+        "started": "2026-09-25T03:10:59.806Z",
+        "lastUpdated": "2026-09-25T03:11:22.704Z"
+      },
+      "lastFile": "/Users/timothy/Desktop/develop/systemNeighborhoodSeniorCare/web/src/features/auth-signup/ui/SignupForm.tsx"
     }
   },
   "pipeline": {
@@ -414,7 +466,7 @@
   "session": {
     "startedAt": "2026-09-19T06:29:03.822Z",
     "onboardingCompleted": false,
-    "lastActivity": "2026-09-24T01:57:23.474Z"
+    "lastActivity": "2026-09-25T03:11:43.370Z"
   },
   "history": [
     {
@@ -930,6 +982,144 @@
     {
       "timestamp": "2026-09-24T01:57:23.474Z",
       "feature": "guardian-dashboard",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-09-24T13:11:36.012Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-09-24T13:11:40.846Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-09-24T13:11:49.269Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-09-24T13:11:56.970Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-09-24T13:12:01.617Z",
+      "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-09-24T13:12:05.911Z",
+      "feature": "web",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-09-24T13:12:10.185Z",
+      "feature": "web",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-09-24T13:12:14.613Z",
+      "feature": "web",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-09-25T00:33:30.906Z",
+      "feature": "me",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-09-25T00:33:35.774Z",
+      "feature": "auth-login",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-09-25T00:33:42.329Z",
+      "feature": "auth-login",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-09-25T00:33:46.379Z",
+      "feature": "auth-login",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-09-25T00:33:52.599Z",
+      "feature": "web",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-09-25T00:33:56.491Z",
+      "feature": "auth-login",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-09-25T03:10:54.080Z",
+      "feature": "signup",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-09-25T03:10:59.806Z",
+      "feature": "auth-signup",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-09-25T03:11:05.024Z",
+      "feature": "auth-signup",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-09-25T03:11:08.151Z",
+      "feature": "auth-signup",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-09-25T03:11:22.704Z",
+      "feature": "auth-signup",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-09-25T03:11:31.250Z",
+      "feature": "signup",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-09-25T03:11:35.294Z",
+      "feature": "signup",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-09-25T03:11:39.163Z",
+      "feature": "login",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-09-25T03:11:43.370Z",
+      "feature": "login",
       "phase": "do",
       "action": "updated"
     }
