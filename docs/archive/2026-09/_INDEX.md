@@ -4,3 +4,4 @@
 |---------|:----------:|:---------:|--------|------|
 | ai-summary | 100% | 0 | 2026-09-24 | `ai-summary/` |
 | shared-api-client-v2 | 100% | 0 | 2026-09-25 | `shared-api-client-v2/` |
+| api-client | 97% | 0 | 2026-09-25 | `api-client/` |
