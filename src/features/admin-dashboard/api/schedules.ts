@@ -1,49 +1,49 @@
 // Design Ref: §6.3 — 일정 CRUD Client helpers
-import type { components } from '@shared/api/schema'
+import type { components } from "@shared/api/schema";
 
-type ScheduleCreate = components['schemas']['ScheduleCreate']
-type ScheduleUpdate = components['schemas']['ScheduleUpdate']
+type ScheduleCreate = components["schemas"]["ScheduleCreate"];
+type ScheduleUpdate = components["schemas"]["ScheduleUpdate"];
 
 export async function createSchedule(
-  payload: ScheduleCreate
+  payload: ScheduleCreate,
 ): Promise<{ ok: boolean; error?: string }> {
-  const res = await fetch('/api/schedules', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+  const res = await fetch("/api/schedules", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload),
-  })
+  });
   if (!res.ok) {
-    const data = await res.json().catch(() => ({}))
-    return { ok: false, error: data.detail ?? '일정 생성 실패' }
+    const data = await res.json().catch(() => ({}));
+    return { ok: false, error: data.detail ?? "일정 생성 실패" };
   }
-  return { ok: true }
+  return { ok: true };
 }
 
 export async function updateSchedule(
   id: number,
-  payload: ScheduleUpdate
+  payload: ScheduleUpdate,
 ): Promise<{ ok: boolean; error?: string }> {
   const res = await fetch(`/api/schedules/${id}`, {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload),
-  })
+  });
   if (!res.ok) {
-    const data = await res.json().catch(() => ({}))
-    return { ok: false, error: data.detail ?? '일정 수정 실패' }
+    const data = await res.json().catch(() => ({}));
+    return { ok: false, error: data.detail ?? "일정 수정 실패" };
   }
-  return { ok: true }
+  return { ok: true };
 }
 
 export async function deleteSchedule(
-  id: number
+  id: number,
 ): Promise<{ ok: boolean; error?: string }> {
   const res = await fetch(`/api/schedules/${id}`, {
-    method: 'DELETE',
-  })
+    method: "DELETE",
+  });
   if (!res.ok) {
-    const data = await res.json().catch(() => ({}))
-    return { ok: false, error: data.detail ?? '일정 삭제 실패' }
+    const data = await res.json().catch(() => ({}));
+    return { ok: false, error: data.detail ?? "일정 삭제 실패" };
   }
-  return { ok: true }
+  return { ok: true };
 }

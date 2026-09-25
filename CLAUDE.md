@@ -64,5 +64,6 @@ app/ → widgets → features → entities → shared   (top-down only)
 - `@/*` still resolves from the project root (for `app/` access)
 
 ## 참고 문서 (필요시 읽을 것)
+
 - docs/project-plan.md — 전체 로드맵/일정
-- docs/fsd.md — 아키텍쳐 
+- docs/fsd.md — 아키텍쳐

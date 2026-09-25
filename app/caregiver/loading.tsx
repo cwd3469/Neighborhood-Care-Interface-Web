@@ -8,5 +8,5 @@ export default function CaregiverLoading() {
         ))}
       </div>
     </main>
-  )
+  );
 }

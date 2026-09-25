@@ -1,15 +1,17 @@
-'use client'
+"use client";
 
 export default function CaregiverError({
   error,
   reset,
 }: {
-  error: Error & { digest?: string }
-  reset: () => void
+  error: Error & { digest?: string };
+  reset: () => void;
 }) {
   return (
     <main className="mx-auto max-w-2xl p-6">
-      <h2 className="text-lg font-semibold text-red-600">오류가 발생했습니다</h2>
+      <h2 className="text-lg font-semibold text-red-600">
+        오류가 발생했습니다
+      </h2>
       <p className="mt-2 text-sm text-gray-600">{error.message}</p>
       <button
         onClick={reset}
@@ -18,5 +20,5 @@ export default function CaregiverError({
         다시 시도
       </button>
     </main>
-  )
+  );
 }

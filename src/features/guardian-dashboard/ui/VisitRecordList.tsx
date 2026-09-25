@@ -1,8 +1,12 @@
 // Design Ref: §6 — Server Component 유지, VisitRecordCard에 위임
-import type { VisitRecordResponse } from '../api/records'
-import { VisitRecordCard } from './VisitRecordCard'
+import type { VisitRecordResponse } from "../api/records";
+import { VisitRecordCard } from "./VisitRecordCard";
 
-export function VisitRecordList({ records }: { records: VisitRecordResponse[] }) {
+export function VisitRecordList({
+  records,
+}: {
+  records: VisitRecordResponse[];
+}) {
   return (
     <section className="rounded-lg border border-gray-200 p-5">
       <h2 className="text-base font-semibold text-gray-700 mb-3">
@@ -18,5 +22,5 @@ export function VisitRecordList({ records }: { records: VisitRecordResponse[] })
         </ul>
       )}
     </section>
-  )
+  );
 }

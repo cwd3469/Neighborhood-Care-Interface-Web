@@ -1,11 +1,17 @@
 // Design Ref: §6 — 활력징후 테이블 (최근 5건)
 // Plan SC: SC-04
-import type { VitalObservationResponse } from '../api/vitals'
+import type { VitalObservationResponse } from "../api/vitals";
 
-export function VitalsPanel({ vitals }: { vitals: VitalObservationResponse[] }) {
+export function VitalsPanel({
+  vitals,
+}: {
+  vitals: VitalObservationResponse[];
+}) {
   return (
     <section className="rounded-lg border border-gray-200 p-5">
-      <h2 className="text-base font-semibold text-gray-700 mb-3">활력징후 (최근 {vitals.length}건)</h2>
+      <h2 className="text-base font-semibold text-gray-700 mb-3">
+        활력징후 (최근 {vitals.length}건)
+      </h2>
       {vitals.length === 0 ? (
         <p className="text-sm text-gray-400">기록된 활력징후가 없습니다.</p>
       ) : (
@@ -22,11 +28,15 @@ export function VitalsPanel({ vitals }: { vitals: VitalObservationResponse[] }) 
               <tr key={v.id} className="text-gray-700">
                 <td className="py-2">{v.display_name}</td>
                 <td className="py-2">
-                  {v.value} <span className="text-gray-400 text-xs">{v.unit}</span>
+                  {v.value}{" "}
+                  <span className="text-gray-400 text-xs">{v.unit}</span>
                 </td>
                 <td className="py-2 text-gray-400">
-                  {new Date(v.observed_at).toLocaleString('ko-KR', {
-                    month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit',
+                  {new Date(v.observed_at).toLocaleString("ko-KR", {
+                    month: "2-digit",
+                    day: "2-digit",
+                    hour: "2-digit",
+                    minute: "2-digit",
                   })}
                 </td>
               </tr>
@@ -35,5 +45,5 @@ export function VitalsPanel({ vitals }: { vitals: VitalObservationResponse[] }) 
         </table>
       )}
     </section>
-  )
+  );
 }

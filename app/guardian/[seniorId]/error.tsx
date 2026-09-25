@@ -1,17 +1,19 @@
-'use client'
+"use client";
 
-import Link from 'next/link'
+import Link from "next/link";
 
 export default function Error({
   error,
   reset,
 }: {
-  error: Error & { digest?: string }
-  reset: () => void
+  error: Error & { digest?: string };
+  reset: () => void;
 }) {
   return (
     <main className="max-w-2xl mx-auto px-4 py-8 text-center">
-      <p className="text-red-500 font-medium mb-2">어르신 정보를 불러오지 못했습니다.</p>
+      <p className="text-red-500 font-medium mb-2">
+        어르신 정보를 불러오지 못했습니다.
+      </p>
       <p className="text-sm text-gray-400 mb-6">{error.message}</p>
       <div className="flex justify-center gap-3">
         <button
@@ -28,5 +30,5 @@ export default function Error({
         </Link>
       </div>
     </main>
-  )
+  );
 }

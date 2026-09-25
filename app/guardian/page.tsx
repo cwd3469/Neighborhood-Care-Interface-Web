@@ -1,13 +1,13 @@
 // Design Ref: §5.1 — 보호자 어르신 목록 페이지
 // Plan SC: SC-01
-import { fetchSeniors } from '@entities/senior'
-import { SeniorCard } from '@features/guardian-dashboard'
+import { fetchSeniors } from "@entities/senior";
+import { SeniorCard } from "@features/guardian-dashboard";
 
 export default async function GuardianPage() {
-  const seniors = await fetchSeniors()
+  const seniors = await fetchSeniors();
 
   return (
-    <main className="max-w-2xl mx-auto px-4 py-8">
+    <main className="max-w-2xl mx-auto px-4 py-8 bg-[#eee]">
       <h1 className="text-2xl font-bold text-gray-900 mb-6">담당 어르신</h1>
       {seniors.length === 0 ? (
         <div className="rounded-lg border border-dashed border-gray-300 p-10 text-center">
@@ -22,5 +22,5 @@ export default async function GuardianPage() {
         </ul>
       )}
     </main>
-  )
+  );
 }

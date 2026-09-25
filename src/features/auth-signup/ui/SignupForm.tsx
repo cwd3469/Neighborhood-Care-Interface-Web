@@ -1,32 +1,38 @@
-'use client'
+"use client";
 // Design Ref: §3.3 — 회원가입 폼 UI
 // Plan SC: SC-02 — passwordConfirm 불일치 인라인 에러
-import { useState } from 'react'
-import { useSignup } from '../model/useSignup'
+import { useState } from "react";
+import { useSignup } from "../model/useSignup";
 
 export function SignupForm() {
-  const { signup, isPending, error } = useSignup()
-  const [confirmError, setConfirmError] = useState<string | null>(null)
+  const { signup, isPending, error } = useSignup();
+  const [confirmError, setConfirmError] = useState<string | null>(null);
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-    const form = e.currentTarget
-    const name = (form.elements.namedItem('name') as HTMLInputElement).value
-    const email = (form.elements.namedItem('email') as HTMLInputElement).value
-    const password = (form.elements.namedItem('password') as HTMLInputElement).value
-    const passwordConfirm = (form.elements.namedItem('passwordConfirm') as HTMLInputElement).value
+    e.preventDefault();
+    const form = e.currentTarget;
+    const name = (form.elements.namedItem("name") as HTMLInputElement).value;
+    const email = (form.elements.namedItem("email") as HTMLInputElement).value;
+    const password = (form.elements.namedItem("password") as HTMLInputElement)
+      .value;
+    const passwordConfirm = (
+      form.elements.namedItem("passwordConfirm") as HTMLInputElement
+    ).value;
 
     // Plan SC: SC-02 — passwordConfirm 프론트 유효성
     if (password !== passwordConfirm) {
-      setConfirmError('비밀번호가 일치하지 않습니다.')
-      return
+      setConfirmError("비밀번호가 일치하지 않습니다.");
+      return;
     }
-    setConfirmError(null)
-    signup({ name, email, password })
-  }
+    setConfirmError(null);
+    signup({ name, email, password });
+  };
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-4 w-full max-w-sm">
+    <form
+      onSubmit={handleSubmit}
+      className="flex flex-col gap-4 w-full max-w-sm"
+    >
       <div className="flex flex-col gap-1">
         <label htmlFor="name" className="text-sm font-medium text-gray-700">
           이름
@@ -73,7 +79,10 @@ export function SignupForm() {
       </div>
 
       <div className="flex flex-col gap-1">
-        <label htmlFor="passwordConfirm" className="text-sm font-medium text-gray-700">
+        <label
+          htmlFor="passwordConfirm"
+          className="text-sm font-medium text-gray-700"
+        >
           비밀번호 확인
         </label>
         <input
@@ -103,8 +112,8 @@ export function SignupForm() {
         disabled={isPending}
         className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
       >
-        {isPending ? '가입 중...' : '회원가입'}
+        {isPending ? "가입 중..." : "회원가입"}
       </button>
     </form>
-  )
+  );
 }
