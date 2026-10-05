@@ -1,36 +1,30 @@
 "use client";
 // Design Ref: §3.3 — 회원가입 폼 UI
 // Plan SC: SC-02 — passwordConfirm 불일치 인라인 에러
-import { useState } from "react";
+import { useForm } from "react-hook-form";
 import { useSignup } from "../model/useSignup";
+
+interface FormValues {
+  name: string;
+  email: string;
+  password: string;
+  passwordConfirm: string;
+}
 
 export function SignupForm() {
   const { signup, isPending, error } = useSignup();
-  const [confirmError, setConfirmError] = useState<string | null>(null);
-
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const form = e.currentTarget;
-    const name = (form.elements.namedItem("name") as HTMLInputElement).value;
-    const email = (form.elements.namedItem("email") as HTMLInputElement).value;
-    const password = (form.elements.namedItem("password") as HTMLInputElement)
-      .value;
-    const passwordConfirm = (
-      form.elements.namedItem("passwordConfirm") as HTMLInputElement
-    ).value;
-
-    // Plan SC: SC-02 — passwordConfirm 프론트 유효성
-    if (password !== passwordConfirm) {
-      setConfirmError("비밀번호가 일치하지 않습니다.");
-      return;
-    }
-    setConfirmError(null);
-    signup({ name, email, password });
-  };
+  const {
+    register,
+    handleSubmit,
+    watch,
+    formState: { errors },
+  } = useForm<FormValues>();
 
   return (
     <form
-      onSubmit={handleSubmit}
+      onSubmit={handleSubmit(({ name, email, password }) =>
+        signup({ name, email, password })
+      )}
       className="flex flex-col gap-4 w-full max-w-sm"
     >
       <div className="flex flex-col gap-1">
@@ -39,12 +33,16 @@ export function SignupForm() {
         </label>
         <input
           id="name"
-          name="name"
-          required
           autoComplete="name"
           placeholder="홍길동"
           className="rounded-md border border-gray-300 px-3 py-2 text-black focus:outline-none focus:ring-2 focus:ring-blue-500"
+          {...register("name", { required: "이름을 입력하세요." })}
         />
+        {errors.name && (
+          <p role="alert" className="text-sm text-red-600">
+            {errors.name.message}
+          </p>
+        )}
       </div>
 
       <div className="flex flex-col gap-1">
@@ -53,13 +51,17 @@ export function SignupForm() {
         </label>
         <input
           id="email"
-          name="email"
           type="email"
-          required
           autoComplete="email"
           placeholder="example@email.com"
           className="rounded-md border border-gray-300 px-3 py-2 text-black focus:outline-none focus:ring-2 focus:ring-blue-500"
+          {...register("email", { required: "이메일을 입력하세요." })}
         />
+        {errors.email && (
+          <p role="alert" className="text-sm text-red-600">
+            {errors.email.message}
+          </p>
+        )}
       </div>
 
       <div className="flex flex-col gap-1">
@@ -68,14 +70,20 @@ export function SignupForm() {
         </label>
         <input
           id="password"
-          name="password"
           type="password"
-          required
-          minLength={8}
           autoComplete="new-password"
           placeholder="8자 이상 입력"
           className="rounded-md border border-gray-300 px-3 py-2 text-black focus:outline-none focus:ring-2 focus:ring-blue-500"
+          {...register("password", {
+            required: "비밀번호를 입력하세요.",
+            minLength: { value: 8, message: "8자 이상 입력하세요." },
+          })}
         />
+        {errors.password && (
+          <p role="alert" className="text-sm text-red-600">
+            {errors.password.message}
+          </p>
+        )}
       </div>
 
       <div className="flex flex-col gap-1">
@@ -87,16 +95,19 @@ export function SignupForm() {
         </label>
         <input
           id="passwordConfirm"
-          name="passwordConfirm"
           type="password"
-          required
           autoComplete="new-password"
           placeholder="비밀번호 재입력"
           className="rounded-md border border-gray-300 px-3 py-2 text-black focus:outline-none focus:ring-2 focus:ring-blue-500"
+          {...register("passwordConfirm", {
+            required: "비밀번호 확인을 입력하세요.",
+            validate: (value) =>
+              value === watch("password") || "비밀번호가 일치하지 않습니다.",
+          })}
         />
-        {confirmError && (
+        {errors.passwordConfirm && (
           <p role="alert" className="text-sm text-red-600">
-            {confirmError}
+            {errors.passwordConfirm.message}
           </p>
         )}
       </div>

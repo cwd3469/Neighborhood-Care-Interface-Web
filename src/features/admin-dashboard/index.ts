@@ -15,5 +15,10 @@ export {
 // UI 컴포넌트
 export { AdminUserChart } from "./ui/AdminUserChart";
 export { UserTable } from "./ui/UserTable";
+export { UserTabs } from "./ui/UserTabs";
 export { SeniorTable } from "./ui/SeniorTable";
 export { ScheduleTable } from "./ui/ScheduleTable";
+
+// API
+export { createUser } from "./api/createUser";
+export type { CreateUserRequest, CreateUserRole } from "./api/createUser";

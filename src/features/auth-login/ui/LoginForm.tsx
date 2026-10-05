@@ -1,37 +1,42 @@
 "use client";
 // Design Ref: §3.3 — 로그인 폼 UI
 // Plan SC: SC-01, SC-02
+import { useForm } from "react-hook-form";
 import { useLogin } from "../model/useLogin";
+
+interface FormValues {
+  username: string;
+  password: string;
+}
 
 export function LoginForm() {
   const { login, isPending, error } = useLogin();
-
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const form = e.currentTarget;
-    const email = (form.elements.namedItem("email") as HTMLInputElement).value;
-    const password = (form.elements.namedItem("password") as HTMLInputElement)
-      .value;
-    login({ username: email, password });
-  };
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<FormValues>();
 
   return (
     <form
-      onSubmit={handleSubmit}
-      className="flex flex-col gap-4 w-full max-w-sm "
+      onSubmit={handleSubmit((data) => login(data))}
+      className="flex flex-col gap-4 w-full max-w-sm"
     >
       <div className="flex flex-col gap-1">
-        <label htmlFor="email" className="text-sm font-medium text-gray-700">
-          이메일
+        <label htmlFor="username" className="text-sm font-medium text-gray-700">
+          유저 아이디
         </label>
         <input
-          id="email"
-          name="email"
-          required
-          autoComplete="email"
-          placeholder="example@email.com"
+          id="username"
+          placeholder="username"
           className="rounded-md border border-gray-300 px-3 py-2 text-black focus:outline-none focus:ring-2 focus:ring-blue-500"
+          {...register("username", { required: "이메일을 입력하세요." })}
         />
+        {errors.username && (
+          <p role="alert" className="text-sm text-red-600">
+            {errors.username.message}
+          </p>
+        )}
       </div>
 
       <div className="flex flex-col gap-1">
@@ -40,13 +45,17 @@ export function LoginForm() {
         </label>
         <input
           id="password"
-          name="password"
           type="password"
-          required
           autoComplete="current-password"
           placeholder="비밀번호 입력"
-          className="rounded-md border border-gray-300 px-3 py-2 text-black focus:outline-none focus:ring-2 focus:ring-blue-500 "
+          className="rounded-md border border-gray-300 px-3 py-2 text-black focus:outline-none focus:ring-2 focus:ring-blue-500"
+          {...register("password", { required: "비밀번호를 입력하세요." })}
         />
+        {errors.password && (
+          <p role="alert" className="text-sm text-red-600">
+            {errors.password.message}
+          </p>
+        )}
       </div>
 
       {error && (
