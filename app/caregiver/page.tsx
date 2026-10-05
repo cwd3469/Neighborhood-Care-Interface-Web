@@ -1,11 +1,10 @@
-// Design Ref: §7 — 초기 데이터 Server Component fetch + senior 매핑
-// Plan SC: SC-01, SC-08
+// Design Ref: §5.2 — caregiver 대시보드: 방문 현황 차트 + 오늘 일정 요약
 import { fetchSeniors } from "@entities/senior";
 import {
+  CaregiverScheduleChart,
   fetchCaregiverSchedules,
   ScheduleCard,
 } from "@features/caregiver-dashboard";
-import { SeniorCard } from "@features/guardian-dashboard";
 
 export default async function CaregiverPage() {
   const [seniors, schedules] = await Promise.all([
@@ -13,35 +12,36 @@ export default async function CaregiverPage() {
     fetchCaregiverSchedules(),
   ]);
 
-  // Plan SC: Known Constraint — senior_name 없음, senior_id → name 매핑
   const seniorMap = Object.fromEntries(seniors.map((s) => [s.id, s.full_name]));
 
+  // Plan SC: SC-02 — 상태별 집계
+  const stats = {
+    scheduled: schedules.filter((s) => s.status === "scheduled").length,
+    in_progress: schedules.filter((s) => s.status === "in_progress").length,
+    completed: schedules.filter((s) => s.status === "completed").length,
+    cancelled: schedules.filter((s) => s.status === "cancelled").length,
+  };
+
   return (
-    <main className="mx-auto max-w-2xl space-y-8 p-6 bg-[#eee]">
-      <h1 className="text-2xl font-bold text-gray-900">오늘의 방문 일정</h1>
+    <main className="mx-auto max-w-2xl space-y-6 p-6">
+      <h1 className="text-2xl font-bold text-gray-900">케어기버 대시보드</h1>
 
-      {schedules.length === 0 ? (
-        <p className="text-gray-500">오늘 예정된 방문 일정이 없습니다.</p>
-      ) : (
-        <div className="space-y-4">
-          {schedules.map((s) => (
-            <ScheduleCard
-              key={s.id}
-              schedule={s}
-              seniorName={seniorMap[s.senior_id] ?? `어르신 #${s.senior_id}`}
-            />
-          ))}
-        </div>
-      )}
+      {/* 방문 현황 차트 */}
+      <CaregiverScheduleChart {...stats} />
 
-      <section className="space-y-4">
-        <h2 className="text-xl font-semibold text-gray-800">담당 어르신</h2>
-        {seniors.length === 0 ? (
-          <p className="text-gray-500">담당 어르신이 없습니다.</p>
+      {/* 오늘 방문 일정 요약 */}
+      <section className="space-y-3">
+        <h2 className="text-xl font-semibold text-gray-800">오늘의 방문 일정</h2>
+        {schedules.length === 0 ? (
+          <p className="text-gray-500">오늘 예정된 방문 일정이 없습니다.</p>
         ) : (
           <div className="space-y-3">
-            {seniors.map((s) => (
-              <SeniorCard key={s.id} senior={s} />
+            {schedules.slice(0, 5).map((s) => (
+              <ScheduleCard
+                key={s.id}
+                schedule={s}
+                seniorName={seniorMap[s.senior_id] ?? `어르신 #${s.senior_id}`}
+              />
             ))}
           </div>
         )}

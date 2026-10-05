@@ -13,6 +13,7 @@ export {
 } from "./api/schedules";
 
 // UI 컴포넌트
+export { AdminUserChart } from "./ui/AdminUserChart";
 export { UserTable } from "./ui/UserTable";
 export { SeniorTable } from "./ui/SeniorTable";
 export { ScheduleTable } from "./ui/ScheduleTable";

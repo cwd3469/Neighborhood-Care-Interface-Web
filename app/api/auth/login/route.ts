@@ -7,6 +7,7 @@ interface FastApiTokenResponse {
   refresh_token: string;
   token_type: string;
   role: string; // 'guardian' | 'caregiver' | 'admin'
+  name: string; // Design Ref: §2.1 — 사용자 이름 (헤더 표시용)
 }
 
 export async function POST(request: Request) {
@@ -52,6 +53,11 @@ export async function POST(request: Request) {
     maxAge: REFRESH_TOKEN_MAX_AGE,
   });
   response.cookies.set("user_role", responseData.role, {
+    ...BASE_COOKIE_OPTIONS,
+    maxAge: REFRESH_TOKEN_MAX_AGE,
+  });
+  // Design Ref: §2.1 — user_name 쿠키: 헤더 이름 표시용
+  response.cookies.set("user_name", responseData.name, {
     ...BASE_COOKIE_OPTIONS,
     maxAge: REFRESH_TOKEN_MAX_AGE,
   });

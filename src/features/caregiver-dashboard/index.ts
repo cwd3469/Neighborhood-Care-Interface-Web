@@ -1,3 +1,4 @@
+export { CaregiverScheduleChart } from "./ui/CaregiverScheduleChart";
 export { fetchCaregiverSchedules } from "./api/schedules";
 export { updateScheduleStatus } from "./api/updateScheduleStatus";
 export { createRecord } from "./api/createRecord";

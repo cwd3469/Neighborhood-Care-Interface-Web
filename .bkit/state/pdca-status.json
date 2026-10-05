@@ -1,6 +1,6 @@
 {
   "version": "3.0",
-  "lastUpdated": "2026-09-25T08:11:09.655Z",
+  "lastUpdated": "2026-10-05T00:27:05.431Z",
   "activeFeatures": [
     "patient",
     "caregiver",
@@ -34,7 +34,11 @@
     "signup",
     "auth-signup",
     "refresh",
-    "auth-refresh-token"
+    "auth-refresh-token",
+    "logout",
+    "app-shell",
+    "caregivers",
+    "users"
   ],
   "primaryFeature": "patient",
   "archivedFeatures": {
@@ -70,9 +74,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-09-19T07:45:12.338Z",
-        "lastUpdated": "2026-09-23T09:11:00.537Z"
+        "lastUpdated": "2026-10-04T23:17:24.850Z"
       },
-      "lastFile": "/Users/timothy/Desktop/develop/systemNeighborhoodSeniorCare/web/app/caregiver/error.tsx"
+      "lastFile": "/Users/timothy/Desktop/develop/systemNeighborhoodSeniorCare/web/app/caregiver/page.tsx"
     },
     "record-health-metric": {
       "phase": "do",
@@ -135,9 +139,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-09-19T07:45:21.874Z",
-        "lastUpdated": "2026-09-19T07:45:21.874Z"
+        "lastUpdated": "2026-09-28T13:50:59.380Z"
       },
-      "lastFile": "/Users/timothy/Desktop/develop/systemNeighborhoodSeniorCare/web/src/shared/ui/index.ts"
+      "lastFile": "/Users/timothy/Desktop/develop/systemNeighborhoodSeniorCare/web/src/widgets/app-shell/ui/AppSidebar.tsx"
     },
     "project-setup": {
       "phase": "act",
@@ -202,9 +206,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-09-23T04:30:26.899Z",
-        "lastUpdated": "2026-09-23T08:39:44.442Z"
+        "lastUpdated": "2026-10-04T23:16:05.355Z"
       },
-      "lastFile": "/Users/timothy/Desktop/develop/systemNeighborhoodSeniorCare/web/app/guardian/error.tsx"
+      "lastFile": "/Users/timothy/Desktop/develop/systemNeighborhoodSeniorCare/web/app/guardian/page.tsx"
     },
     "admin": {
       "phase": "do",
@@ -215,9 +219,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-09-23T04:30:28.805Z",
-        "lastUpdated": "2026-09-24T00:57:17.976Z"
+        "lastUpdated": "2026-10-04T23:17:31.082Z"
       },
-      "lastFile": "/Users/timothy/Desktop/develop/systemNeighborhoodSeniorCare/web/app/admin/error.tsx"
+      "lastFile": "/Users/timothy/Desktop/develop/systemNeighborhoodSeniorCare/web/app/admin/page.tsx"
     },
     "login": {
       "phase": "do",
@@ -228,7 +232,7 @@
       "documents": {},
       "timestamps": {
         "started": "2026-09-23T04:30:52.727Z",
-        "lastUpdated": "2026-09-25T07:53:45.084Z"
+        "lastUpdated": "2026-09-28T13:46:20.899Z"
       },
       "lastFile": "/Users/timothy/Desktop/develop/systemNeighborhoodSeniorCare/web/app/api/auth/login/route.ts"
     },
@@ -241,9 +245,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-09-23T04:31:00.436Z",
-        "lastUpdated": "2026-09-25T03:29:54.840Z"
+        "lastUpdated": "2026-10-05T00:27:05.431Z"
       },
-      "lastFile": "/Users/timothy/Desktop/develop/systemNeighborhoodSeniorCare/web/src/features/auth-login/api/login.ts",
+      "lastFile": "/Users/timothy/Desktop/develop/systemNeighborhoodSeniorCare/web/src/features/auth-login/model/useLogin.ts",
       "previousPhase": "check",
       "autoAdvanced": true
     },
@@ -282,7 +286,7 @@
       "documents": {},
       "timestamps": {
         "started": "2026-09-23T08:38:23.302Z",
-        "lastUpdated": "2026-09-24T01:57:23.474Z"
+        "lastUpdated": "2026-10-04T23:15:50.725Z"
       },
       "lastFile": "/Users/timothy/Desktop/develop/systemNeighborhoodSeniorCare/web/src/features/guardian-dashboard/index.ts",
       "previousPhase": "check",
@@ -323,20 +327,20 @@
       "documents": {},
       "timestamps": {
         "started": "2026-09-23T09:08:49.018Z",
-        "lastUpdated": "2026-09-23T09:08:49.018Z"
+        "lastUpdated": "2026-10-04T23:16:51.605Z"
       },
-      "lastFile": "/Users/timothy/Desktop/develop/systemNeighborhoodSeniorCare/web/app/api/records/route.ts"
+      "lastFile": "/Users/timothy/Desktop/develop/systemNeighborhoodSeniorCare/web/app/caregiver/records/page.tsx"
     },
     "caregiver-dashboard": {
-      "phase": "act",
-      "phaseNumber": 5,
+      "phase": "do",
+      "phaseNumber": 3,
       "matchRate": null,
       "iterationCount": 0,
       "requirements": [],
       "documents": {},
       "timestamps": {
         "started": "2026-09-23T09:09:57.882Z",
-        "lastUpdated": "2026-09-23T09:27:18.479Z"
+        "lastUpdated": "2026-10-04T23:15:56.434Z"
       },
       "lastFile": "/Users/timothy/Desktop/develop/systemNeighborhoodSeniorCare/web/src/features/caregiver-dashboard/index.ts",
       "previousPhase": "check",
@@ -364,9 +368,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-09-24T00:52:52.727Z",
-        "lastUpdated": "2026-09-24T00:52:52.727Z"
+        "lastUpdated": "2026-10-04T23:17:07.643Z"
       },
-      "lastFile": "/Users/timothy/Desktop/develop/systemNeighborhoodSeniorCare/web/app/api/seniors/route.ts"
+      "lastFile": "/Users/timothy/Desktop/develop/systemNeighborhoodSeniorCare/web/app/admin/seniors/page.tsx"
     },
     "schedules": {
       "phase": "do",
@@ -377,9 +381,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-09-24T00:52:58.805Z",
-        "lastUpdated": "2026-09-24T00:52:58.805Z"
+        "lastUpdated": "2026-10-04T23:17:04.921Z"
       },
-      "lastFile": "/Users/timothy/Desktop/develop/systemNeighborhoodSeniorCare/web/app/api/schedules/route.ts"
+      "lastFile": "/Users/timothy/Desktop/develop/systemNeighborhoodSeniorCare/web/app/admin/schedules/page.tsx"
     },
     "[scheduleId]": {
       "phase": "do",
@@ -403,7 +407,7 @@
       "documents": {},
       "timestamps": {
         "started": "2026-09-24T00:53:06.781Z",
-        "lastUpdated": "2026-09-24T00:57:24.003Z"
+        "lastUpdated": "2026-10-04T23:15:59.526Z"
       },
       "lastFile": "/Users/timothy/Desktop/develop/systemNeighborhoodSeniorCare/web/src/features/admin-dashboard/index.ts"
     },
@@ -429,7 +433,7 @@
       "documents": {},
       "timestamps": {
         "started": "2026-09-25T00:33:30.906Z",
-        "lastUpdated": "2026-09-25T00:33:30.906Z"
+        "lastUpdated": "2026-09-28T13:46:24.829Z"
       },
       "lastFile": "/Users/timothy/Desktop/develop/systemNeighborhoodSeniorCare/web/app/api/auth/me/route.ts"
     },
@@ -485,6 +489,58 @@
       },
       "previousPhase": "check",
       "autoAdvanced": true
+    },
+    "logout": {
+      "phase": "do",
+      "phaseNumber": 3,
+      "matchRate": null,
+      "iterationCount": 0,
+      "requirements": [],
+      "documents": {},
+      "timestamps": {
+        "started": "2026-09-28T13:46:38.769Z",
+        "lastUpdated": "2026-09-28T13:46:38.769Z"
+      },
+      "lastFile": "/Users/timothy/Desktop/develop/systemNeighborhoodSeniorCare/web/app/api/auth/logout/route.ts"
+    },
+    "app-shell": {
+      "phase": "do",
+      "phaseNumber": 3,
+      "matchRate": null,
+      "iterationCount": 0,
+      "requirements": [],
+      "documents": {},
+      "timestamps": {
+        "started": "2026-09-28T13:46:47.156Z",
+        "lastUpdated": "2026-09-28T13:47:10.383Z"
+      },
+      "lastFile": "/Users/timothy/Desktop/develop/systemNeighborhoodSeniorCare/web/src/widgets/app-shell/index.ts"
+    },
+    "caregivers": {
+      "phase": "do",
+      "phaseNumber": 3,
+      "matchRate": null,
+      "iterationCount": 0,
+      "requirements": [],
+      "documents": {},
+      "timestamps": {
+        "started": "2026-10-04T23:16:39.334Z",
+        "lastUpdated": "2026-10-04T23:17:34.237Z"
+      },
+      "lastFile": "/Users/timothy/Desktop/develop/systemNeighborhoodSeniorCare/web/app/guardian/caregivers/page.tsx"
+    },
+    "users": {
+      "phase": "do",
+      "phaseNumber": 3,
+      "matchRate": null,
+      "iterationCount": 0,
+      "requirements": [],
+      "documents": {},
+      "timestamps": {
+        "started": "2026-10-04T23:17:01.081Z",
+        "lastUpdated": "2026-10-04T23:17:01.081Z"
+      },
+      "lastFile": "/Users/timothy/Desktop/develop/systemNeighborhoodSeniorCare/web/app/admin/users/page.tsx"
     }
   },
   "pipeline": {
@@ -495,7 +551,7 @@
   "session": {
     "startedAt": "2026-09-19T06:29:03.822Z",
     "onboardingCompleted": false,
-    "lastActivity": "2026-09-25T08:11:09.655Z"
+    "lastActivity": "2026-10-05T00:27:05.431Z"
   },
   "history": [
     {
@@ -1233,6 +1289,240 @@
     {
       "timestamp": "2026-09-25T08:11:09.655Z",
       "feature": "api",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-09-28T13:46:16.830Z",
+      "feature": "login",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-09-28T13:46:20.899Z",
+      "feature": "login",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-09-28T13:46:24.829Z",
+      "feature": "me",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-09-28T13:46:27.671Z",
+      "feature": "auth-login",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-09-28T13:46:38.769Z",
+      "feature": "logout",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-09-28T13:46:47.156Z",
+      "feature": "app-shell",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-09-28T13:46:56.437Z",
+      "feature": "ui",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-09-28T13:47:04.366Z",
+      "feature": "ui",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-09-28T13:47:08.163Z",
+      "feature": "ui",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-09-28T13:47:10.383Z",
+      "feature": "app-shell",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-09-28T13:47:20.839Z",
+      "feature": "guardian",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-09-28T13:47:23.316Z",
+      "feature": "caregiver",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-09-28T13:47:26.089Z",
+      "feature": "admin",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-09-28T13:50:59.380Z",
+      "feature": "ui",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-10-04T23:07:37.598Z",
+      "feature": "guardian-dashboard",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-10-04T23:10:38.383Z",
+      "feature": "caregiver-dashboard",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-10-04T23:10:39.247Z",
+      "feature": "admin-dashboard",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-10-04T23:10:44.085Z",
+      "feature": "guardian-dashboard",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-10-04T23:15:50.725Z",
+      "feature": "guardian-dashboard",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-10-04T23:15:56.434Z",
+      "feature": "caregiver-dashboard",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-10-04T23:15:59.526Z",
+      "feature": "admin-dashboard",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-10-04T23:16:05.355Z",
+      "feature": "guardian",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-10-04T23:16:12.636Z",
+      "feature": "caregiver",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-10-04T23:16:21.536Z",
+      "feature": "admin",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-10-04T23:16:29.913Z",
+      "feature": "records",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-10-04T23:16:33.799Z",
+      "feature": "schedules",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-10-04T23:16:39.334Z",
+      "feature": "caregivers",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-10-04T23:16:47.495Z",
+      "feature": "schedules",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-10-04T23:16:51.605Z",
+      "feature": "records",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-10-04T23:16:55.104Z",
+      "feature": "seniors",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-10-04T23:17:01.081Z",
+      "feature": "users",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-10-04T23:17:04.921Z",
+      "feature": "schedules",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-10-04T23:17:07.643Z",
+      "feature": "seniors",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-10-04T23:17:24.850Z",
+      "feature": "caregiver",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-10-04T23:17:27.940Z",
+      "feature": "admin",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-10-04T23:17:31.082Z",
+      "feature": "admin",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-10-04T23:17:34.237Z",
+      "feature": "caregivers",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-10-05T00:27:01.147Z",
+      "feature": "auth-login",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-10-05T00:27:05.431Z",
+      "feature": "auth-login",
       "phase": "do",
       "action": "updated"
     }

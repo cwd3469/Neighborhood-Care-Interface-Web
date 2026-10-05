@@ -1,3 +1,4 @@
+export { GuardianHealthChart } from "./ui/GuardianHealthChart";
 export { SeniorCard } from "./ui/SeniorCard";
 export { SeniorInfoPanel } from "./ui/SeniorInfoPanel";
 export { VitalsPanel } from "./ui/VitalsPanel";

@@ -7,7 +7,6 @@ import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient, setNavigateToLogin } from "@shared/api";
-import { AuthProvider } from "@features/auth-login";
 
 interface Props {
   children: React.ReactNode;
@@ -22,8 +21,6 @@ export function Providers({ children }: Props) {
   }, [router]);
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <AuthProvider>{children}</AuthProvider>
-    </QueryClientProvider>
+    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
   );
 }

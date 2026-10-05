@@ -6,12 +6,7 @@ export interface LoginRequest {
   password: string;
 }
 
-export interface LoginResult {
-  ok: boolean;
-  error?: string;
-}
-
-export async function loginApi(body: LoginRequest): Promise<LoginResult> {
+export async function loginApi(body: LoginRequest): Promise<void> {
   const res = await fetch("/api/auth/login", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -20,8 +15,6 @@ export async function loginApi(body: LoginRequest): Promise<LoginResult> {
 
   if (!res.ok) {
     const data = await res.json().catch(() => ({}));
-    return { ok: false, error: data.detail ?? "로그인에 실패했습니다." };
+    throw new Error(data.detail ?? "로그인에 실패했습니다.");
   }
-
-  return { ok: true };
 }
