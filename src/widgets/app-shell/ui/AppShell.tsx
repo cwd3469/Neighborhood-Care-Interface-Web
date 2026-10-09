@@ -20,7 +20,7 @@ export function AppShell({ children }: Props) {
       .get<AuthUser>("/api/auth/me")
       .then(setStoreLogin)
       .catch(() => {
-        // 401은 axios interceptor가 refresh → 실패 시 /login 이동까지 처리
+        // 401은 clientFetch가 refresh → 실패 시 window.location='/login' 처리
       });
   }, [setStoreLogin]);
 

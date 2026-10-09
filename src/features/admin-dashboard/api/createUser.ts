@@ -13,6 +13,7 @@ interface BaseUserFields {
 
 interface GuardianFields {
   role: "guardian";
+  senior_name: string;
   relationship: "자녀" | "배우자" | "형제/자매" | "부모" | "기타";
   address?: string;
   emergency_contact?: string;
@@ -25,8 +26,7 @@ interface CaregiverFields {
 }
 
 export type CreateUserRequest =
-  | (BaseUserFields & GuardianFields)
-  | (BaseUserFields & CaregiverFields);
+  (BaseUserFields & GuardianFields) | (BaseUserFields & CaregiverFields);
 
 export async function createUser(body: CreateUserRequest): Promise<void> {
   const res = await fetch("/api/admin/users", {

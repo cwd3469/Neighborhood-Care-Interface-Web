@@ -1,124 +1,60 @@
-// Design Ref: §2.1 — axios 싱글톤 + 동시 401 큐 패턴
-// Plan SC: SC-01, SC-02, SC-03, SC-04
+// Design Ref: §2.3 — axios 제거, native fetch wrapper + 401 retry
+// Plan SC: SC-01, SC-02, SC-03
 "use client";
-import axios, { type InternalAxiosRequestConfig } from "axios";
-import { parseAxiosError } from "./errors";
+import { parseFetchError } from "./errors";
 
-type RetryableConfig = InternalAxiosRequestConfig & { _retry?: boolean };
+const JSON_HEADERS = { "Content-Type": "application/json" } as const;
 
-// ── router setter (interceptor에서 useRouter 직접 호출 불가) ──────────
-let _navigateToLogin: (() => void) | null = null;
-
-export function setNavigateToLogin(fn: () => void): void {
-  _navigateToLogin = fn;
+async function parseResponse<T>(res: Response): Promise<T> {
+  const body = await res.json().catch(() => undefined);
+  if (!res.ok) throw parseFetchError(res.status, body);
+  return body as T;
 }
 
-function navigateToLogin(): void {
-  if (_navigateToLogin) {
-    _navigateToLogin();
-  } else {
-    // fallback: providers.tsx 마운트 전 또는 setter 미등록 시
+async function clientFetch(
+  url: string,
+  init?: RequestInit,
+  _retried = false,
+): Promise<Response> {
+  const res = await fetch(url, init);
+  if (res.status !== 401 || _retried) return res;
+
+  // 401 → refresh 시도 (1회만)
+  const refreshRes = await fetch("/api/auth/refresh", { method: "POST" });
+  if (!refreshRes.ok) {
     window.location.href = "/login";
+    return refreshRes;
   }
+
+  // 재시도 (_retried=true 플래그로 무한 루프 방지)
+  return fetch(url, init);
 }
 
-// ── 동시 401 큐 (Plan SC: SC-01 — 동시 요청 모두 재시도 보장) ────────
-type QueueItem = {
-  resolve: () => void;
-  reject: (err: unknown) => void;
-};
-let isRefreshing = false;
-
-let failedQueue: QueueItem[] = [];
-
-const onFailedQueueResolve = () => {
-  failedQueue.forEach((item) => {
-    item.resolve();
-  });
-  failedQueue = [];
-};
-
-const onFailedQueueReject = (error: unknown) => {
-  failedQueue.forEach((item) => {
-    item.reject(error);
-  });
-  failedQueue = [];
-};
-
-// ── axios 인스턴스 ────────────────────────────────────────────────────
-const apiClient = axios.create({
-  baseURL: "", // 같은 origin — Next.js Route Handler 호출
-  withCredentials: true, // httpOnly 쿠키 자동 전송
-  headers: { "Content-Type": "application/json" },
-});
-
-// ── response interceptor ─────────────────────────────────────────────
-apiClient.interceptors.response.use(
-  (response) => response,
-  async (error: Parameters<typeof parseAxiosError>[0]) => {
-    const originalRequest = error.config as RetryableConfig | undefined;
-    if (!originalRequest) return Promise.reject(parseAxiosError(error));
-
-    // 401이 아니거나 이미 retry 시도한 요청 → 그냥 throw
-    if (error.response?.status !== 401 || originalRequest._retry) {
-      return Promise.reject(parseAxiosError(error));
-    }
-
-    if (isRefreshing) {
-      // 다른 요청이 refresh 중 → 큐에서 대기
-      return new Promise<void>((resolve, reject) => {
-        failedQueue.push({ resolve, reject });
-      })
-        .then(() => apiClient(originalRequest))
-        .catch((err: unknown) => Promise.reject(err));
-    }
-
-    originalRequest._retry = true;
-    isRefreshing = true;
-
-    try {
-      await apiClient.post("/api/auth/refresh");
-      // 큐에 저장 된 요청 건 실행
-      onFailedQueueResolve();
-      return apiClient(originalRequest);
-    } catch (refreshError: unknown) {
-      // 큐에 저장 된 요청 건 취소
-      onFailedQueueReject(refreshError);
-      navigateToLogin();
-      return Promise.reject(parseAxiosError(error));
-    } finally {
-      isRefreshing = false;
-    }
-  },
-);
-
-// ── public API ────────────────────────────────────────────────────────
 export const api = {
-  get: <T>(
-    url: string,
-    config?: Parameters<typeof apiClient.get>[1],
-  ): Promise<T> => apiClient.get<T>(url, config).then((r) => r.data),
+  get: <T>(url: string): Promise<T> =>
+    clientFetch(url).then((r) => parseResponse<T>(r)),
 
-  post: <T>(
-    url: string,
-    data?: unknown,
-    config?: Parameters<typeof apiClient.post>[2],
-  ): Promise<T> => apiClient.post<T>(url, data, config).then((r) => r.data),
+  post: <T>(url: string, data?: unknown): Promise<T> =>
+    clientFetch(url, {
+      method: "POST",
+      headers: JSON_HEADERS,
+      body: JSON.stringify(data),
+    }).then((r) => parseResponse<T>(r)),
 
-  put: <T>(
-    url: string,
-    data?: unknown,
-    config?: Parameters<typeof apiClient.put>[2],
-  ): Promise<T> => apiClient.put<T>(url, data, config).then((r) => r.data),
+  put: <T>(url: string, data?: unknown): Promise<T> =>
+    clientFetch(url, {
+      method: "PUT",
+      headers: JSON_HEADERS,
+      body: JSON.stringify(data),
+    }).then((r) => parseResponse<T>(r)),
 
-  patch: <T>(
-    url: string,
-    data?: unknown,
-    config?: Parameters<typeof apiClient.patch>[2],
-  ): Promise<T> => apiClient.patch<T>(url, data, config).then((r) => r.data),
+  patch: <T>(url: string, data?: unknown): Promise<T> =>
+    clientFetch(url, {
+      method: "PATCH",
+      headers: JSON_HEADERS,
+      body: JSON.stringify(data),
+    }).then((r) => parseResponse<T>(r)),
 
-  delete: <T>(
-    url: string,
-    config?: Parameters<typeof apiClient.delete>[1],
-  ): Promise<T> => apiClient.delete<T>(url, config).then((r) => r.data),
+  delete: <T>(url: string): Promise<T> =>
+    clientFetch(url, { method: "DELETE" }).then((r) => parseResponse<T>(r)),
 };

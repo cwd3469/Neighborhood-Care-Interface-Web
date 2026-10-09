@@ -5,6 +5,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import type { components } from "@shared/api/schema";
 import { createSenior, updateSenior, deleteSenior } from "../api/seniors";
+import { AddressField } from "@shared/ui";
 
 type SeniorResponse = components["schemas"]["SeniorResponse"];
 type SeniorCreate = components["schemas"]["SeniorCreate"];
@@ -76,8 +77,13 @@ export function SeniorTable({ seniors }: Props) {
   }
 
   async function handleCreate() {
-    if (!addForm.full_name || !addForm.birth_date || !addForm.gender) {
-      setError("이름, 생년월일, 성별은 필수입니다.");
+    if (
+      !addForm.full_name ||
+      !addForm.birth_date ||
+      !addForm.gender ||
+      !addForm.address
+    ) {
+      setError("이름, 생년월일, 성별, 주소는 필수입니다.");
       return;
     }
     setPendingId(-1);
@@ -166,13 +172,11 @@ export function SeniorTable({ seniors }: Props) {
                     />
                   </td>
                   <td className="px-2 py-2">
-                    <input
+                    <AddressField
                       value={editForm.address ?? ""}
-                      onChange={(e) =>
-                        setEditForm((f) => ({ ...f, address: e.target.value }))
+                      onChange={(addr) =>
+                        setEditForm((f) => ({ ...f, address: addr }))
                       }
-                      placeholder="주소 (선택)"
-                      className="w-full rounded border border-gray-300 px-2 py-1 text-sm"
                     />
                   </td>
                   <td className="px-2 py-2 text-right">
@@ -256,13 +260,10 @@ export function SeniorTable({ seniors }: Props) {
               }
               className="rounded border border-gray-300 px-2 py-1 text-sm"
             />
-            <input
-              placeholder="주소 (선택)"
+            <AddressField
+              required
               value={addForm.address ?? ""}
-              onChange={(e) =>
-                setAddForm((f) => ({ ...f, address: e.target.value }))
-              }
-              className="rounded border border-gray-300 px-2 py-1 text-sm"
+              onChange={(addr) => setAddForm((f) => ({ ...f, address: addr }))}
             />
             <input
               placeholder="전화번호 (선택)"

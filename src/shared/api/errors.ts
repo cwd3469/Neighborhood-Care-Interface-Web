@@ -1,6 +1,5 @@
-// Design Ref: §4.2 — AxiosError → ApiError 변환
+// Design Ref: §2.1 — parseFetchError: AxiosError 의존성 제거, native fetch Response 기반
 // Plan SC: SC-04
-import type { AxiosError } from "axios";
 import type { ApiError } from "./types";
 
 const STATUS_CODE_MAP: Record<number, string> = {
@@ -12,12 +11,13 @@ const STATUS_CODE_MAP: Record<number, string> = {
   500: "INTERNAL_ERROR",
 };
 
-export function parseAxiosError(err: AxiosError): ApiError {
-  const status = err.response?.status ?? 0;
-  const body = err.response?.data as Record<string, unknown> | undefined;
-  const detail = body?.detail ?? null;
-  const message =
-    typeof detail === "string" ? detail : err.message || `HTTP ${status}`;
+export function parseFetchError(status: number, body?: unknown): ApiError {
+  const data =
+    body && typeof body === "object"
+      ? (body as Record<string, unknown>)
+      : undefined;
+  const detail = data?.detail ?? null;
+  const message = typeof detail === "string" ? detail : `HTTP ${status}`;
   return {
     status,
     message,

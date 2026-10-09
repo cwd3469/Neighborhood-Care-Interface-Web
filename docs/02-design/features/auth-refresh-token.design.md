@@ -1,8 +1,8 @@
 # [Design] auth-refresh-token
 
-**작성일**: 2026-09-25
-**상태**: Design 완료
-**선택 아키텍처**: Option C — Pragmatic (proxy.ts + Route Handler)
+**작성일**: 2026-10-09
+**상태**: Design 완료 (v2 — 기존 design 전면 개정)
+**선택 아키텍처**: Option C — fetch wrapper 통합
 
 ---
 
@@ -10,264 +10,242 @@
 
 | 항목 | 내용 |
 |------|------|
-| **WHY** | access_token(1h) 만료 시 로그인 상태가 끊기는 문제 → refresh_token(7d)으로 silent 갱신 |
-| **WHO** | 모든 역할(guardian/caregiver/admin) — 보호 라우트 접근 사용자 전체 |
-| **RISK** | proxy.ts Edge Runtime에서 내부 Route Handler 호출 시 레이턴시 / set-cookie 헤더 전파 |
-| **SUCCESS** | access_token 만료 후 새로고침 시 /login 이동 없이 정상 동작 |
-| **SCOPE** | proxy.ts 수정 + /api/auth/refresh 신규 + login route의 refresh_token maxAge 수정 |
+| **WHY** | proxy.ts JWT 만료 미검사 → Server Component FastAPI 401 / axios/fetch 이중 구조 유지보수 복잡 |
+| **WHO** | 모든 역할(guardian/caregiver/admin) 보호 라우트 접근 사용자 전체 |
+| **RISK** | Edge Runtime에서 JWT decode: `atob` 사용 가능하나 padding 처리 필요 / axios 제거 후 AppShell/AppHeader 동작 확인 필요 |
+| **SUCCESS** | proxy.ts JWT 만료 체크 동작 + tsc 통과 + axios 패키지 없음 |
+| **SCOPE** | proxy.ts 수정 + client.ts 교체 + errors.ts 교체 + AppShell/AppHeader + package.json. server.ts/refresh/route.ts 변경 없음 |
 
 ---
 
 ## 1. Overview
 
-**선택 아키텍처: Option C — Pragmatic**
+**선택 아키텍처: Option C — fetch wrapper 통합**
 
 ```
-[보호 라우트 요청]
+[Client Component]
+  api.get / api.post
     ↓
-proxy.ts (Edge Runtime)
-    ├─ access_token 있음 → NextResponse.next() ✓
-    ├─ access_token 없음 + refresh_token 없음 → /login redirect
-    └─ access_token 없음 + refresh_token 있음
+  clientFetch(url, init, _retried=false)   ← native fetch wrapper
+    ├─ 정상 응답 → parseResponse<T>() → T
+    └─ 401 응답 + !_retried
         ↓
-        fetch('/api/auth/refresh', POST, Cookie 헤더 전달)
-        ↓
-app/api/auth/refresh/route.ts (Node.js Runtime)
-        ├─ refresh_token 없음 → 401
-        └─ FastAPI POST /refresh 호출
-            ├─ 성공 → access_token 새로 set-cookie → 200 { ok: true }
-            └─ 실패 → 401
-        ↓
-proxy.ts: set-cookie 헤더 전파
-    ├─ /dashboard → user_role로 role별 redirect (쿠키 포함)
-    └─ 기타 → NextResponse.next() (쿠키 포함)
+        fetch('/api/auth/refresh', POST)
+        ├─ ok → 원본 요청 재시도 (_retried=true)
+        └─ !ok → window.location.href = '/login'
+
+[proxy.ts / Edge Runtime]
+  accessToken 있음 + isJwtExpired() → refresh 시도  ← 신규
+  accessToken 있음 + 유효 → NextResponse.next()
+  accessToken 없음 → refresh 시도 (기존)
 ```
 
-**선택 이유:**
-- Edge Runtime에서 외부 FastAPI 직접 호출 시 내부망 URL 문제 가능 → Route Handler(Node.js) 위임
-- `/api/*`는 proxy.ts의 `config.matcher`에 없어 무한 루프 없음
-- 추가 추상화(Option B) 없이 Plan R-02, R-03 요구사항 정확히 구현
+**Option C 선택 이유:**
+- `api` 객체 인터페이스 유지 → AppShell/AppHeader 변경 최소화
+- axios interceptor 대체: `_retried` 플래그로 1회 retry (무한 루프 방지)
+- `parseResponse<T>` + `parseFetchError` 단일 에러 파싱 경로
+- server.ts/refresh/route.ts 변경 없음 — 범위 최소
 
 ---
 
-## 2. 데이터 흐름
+## 2. 파일별 설계
 
-### 2.1 로그인 흐름 (수정)
+### 2.1 `proxy.ts` — isJwtExpired 추가
+
+**변경 전:**
+```typescript
+const accessToken = request.cookies.get('access_token')?.value
+if (!accessToken) {
+  // refresh 시도 or /login redirect
+}
+```
+
+**변경 후:**
+```typescript
+function isJwtExpired(token: string): boolean {
+  try {
+    const payload = token.split('.')[1];
+    const padded = payload + '='.repeat((4 - (payload.length % 4)) % 4);
+    const decoded = JSON.parse(atob(padded)) as { exp?: number };
+    if (!decoded.exp) return false;
+    return decoded.exp * 1000 < Date.now() - 10_000; // 10초 클록 스큐 버퍼
+  } catch {
+    return true; // decode 실패 → 만료로 간주 → refresh 시도 (안전 방향)
+  }
+}
+
+// 기존 !accessToken 조건에 || isJwtExpired(accessToken) 추가
+if (!accessToken || isJwtExpired(accessToken)) {
+  // 기존 refresh 시도 or /login redirect 로직 그대로
+}
+```
+
+**변경 범위:** `isJwtExpired` 헬퍼 추가(11줄) + 조건식 1줄 수정. 기존 refresh/redirect 로직 무변경.
+
+---
+
+### 2.2 `src/shared/api/errors.ts` — AxiosError 제거
+
+**변경 전:**
+```typescript
+import type { AxiosError } from 'axios'
+export function parseAxiosError(error: AxiosError): ApiError { ... }
+```
+
+**변경 후:**
+```typescript
+// axios import 완전 제거
+export function parseFetchError(status: number, body?: unknown): ApiError {
+  const message =
+    body && typeof body === 'object' && 'detail' in body
+      ? String((body as { detail: unknown }).detail)
+      : `HTTP ${status}`;
+  return { status, message };
+}
+```
+
+**ApiError 타입 (`types.ts`):** 변경 없음 — `{ status: number; message: string }` 유지.
+
+---
+
+### 2.3 `src/shared/api/client.ts` — axios → native fetch
+
+**변경 전:** axios instance + interceptor + `setNavigateToLogin` + `isRefreshing` 큐
+
+**변경 후:**
+```typescript
+// Design Ref: §2.3 — axios 제거, native fetch + 401 retry
+import { parseFetchError } from './errors';
+import type { ApiError } from './types';
+
+const JSON_HEADERS = { 'Content-Type': 'application/json' } as const;
+
+async function parseResponse<T>(res: Response): Promise<T> {
+  const body = await res.json().catch(() => undefined);
+  if (!res.ok) throw parseFetchError(res.status, body);
+  return body as T;
+}
+
+async function clientFetch(
+  url: string,
+  init?: RequestInit,
+  _retried = false
+): Promise<Response> {
+  const res = await fetch(url, init);
+  if (res.status !== 401 || _retried) return res;
+
+  // 401 → refresh 시도
+  const refreshRes = await fetch('/api/auth/refresh', { method: 'POST' });
+  if (!refreshRes.ok) {
+    window.location.href = '/login';
+    return refreshRes;
+  }
+
+  // 재시도 (1회만)
+  return fetch(url, init).then(r => {
+    // _retried=true 플래그: 재귀 없음
+    return r;
+  });
+}
+
+export const api = {
+  get:    <T>(url: string) =>
+    clientFetch(url).then(r => parseResponse<T>(r)),
+  post:   <T>(url: string, data?: unknown) =>
+    clientFetch(url, { method: 'POST', headers: JSON_HEADERS, body: JSON.stringify(data) })
+      .then(r => parseResponse<T>(r)),
+  put:    <T>(url: string, data?: unknown) =>
+    clientFetch(url, { method: 'PUT', headers: JSON_HEADERS, body: JSON.stringify(data) })
+      .then(r => parseResponse<T>(r)),
+  patch:  <T>(url: string, data?: unknown) =>
+    clientFetch(url, { method: 'PATCH', headers: JSON_HEADERS, body: JSON.stringify(data) })
+      .then(r => parseResponse<T>(r)),
+  delete: <T>(url: string) =>
+    clientFetch(url, { method: 'DELETE' }).then(r => parseResponse<T>(r)),
+};
+```
+
+**제거:** `setNavigateToLogin`, `isRefreshing`, `failedQueue`, axios 관련 코드 전체.
+
+---
+
+### 2.4 `src/shared/api/index.ts` — setNavigateToLogin 제거
+
+**변경:** `setNavigateToLogin` export 라인 삭제. `api`, `ApiError`, `ApiClient` 타입만 유지.
+
+---
+
+### 2.5 `src/widgets/app-shell/ui/AppShell.tsx` — 변경 없음
+
+`api.get<AuthUser>('/api/auth/me')` 호출이 client.ts `api.get` 인터페이스와 동일하므로 수정 불필요.
+
+단, `setNavigateToLogin` import/호출이 있다면 제거.
+
+---
+
+### 2.6 `src/widgets/app-shell/ui/AppHeader.tsx` — 변경 없음
+
+`api.post('/api/auth/logout')` 호출이 client.ts `api.post` 인터페이스와 동일하므로 수정 불필요.
+
+단, `setNavigateToLogin` import/호출이 있다면 제거.
+
+---
+
+### 2.7 `package.json` — axios 제거
+
+```bash
+pnpm remove axios
+```
+
+`pnpm-lock.yaml`도 자동 갱신됨.
+
+---
+
+## 3. 데이터 흐름
+
+### 3.1 Client Component 인증 흐름 (401 retry)
 
 ```
-LoginForm → POST /api/auth/login → FastAPI POST /login
-→ { access_token, refresh_token, role }
-→ Cookies:
-    access_token  httpOnly, maxAge=3600   (1시간, 변경 없음)
-    refresh_token httpOnly, maxAge=604800 (7일, 변경)
-    user_role     httpOnly, maxAge=604800 (7일, 변경)
+AppShell 마운트
+  → api.get('/api/auth/me')
+    → clientFetch('/api/auth/me')
+      ├─ 200 → AuthUser → setStoreLogin
+      ├─ 401 (_retried=false)
+      │   → fetch('/api/auth/refresh', POST)
+      │     ├─ ok → retry api.get('/api/auth/me') → 200 → setStoreLogin
+      │     └─ !ok → window.location.href='/login'
+      └─ 기타 에러 → catch → setStoreLogout
 ```
 
-### 2.2 보호 라우트 접근 흐름 (신규 — refresh 경로)
+### 3.2 Server Component 인증 흐름 (proxy.ts proactive)
 
 ```
 GET /guardian/dashboard
   → proxy.ts
-    → access_token 없음, refresh_token 있음
-      → fetch POST /api/auth/refresh
-        헤더: Cookie: refresh_token=<value>; user_role=<value>
-        → route.ts: cookies().get('refresh_token')
-        → FastAPI POST /refresh { Authorization: Bearer <refresh_token> }
-        → 200: { access_token: "new_token", token_type: "bearer" }
-        → response.cookies.set('access_token', 'new_token', { maxAge: 3600 })
-        → 200 응답 (set-cookie 헤더 포함)
-      → proxy.ts: refreshRes.headers.get('set-cookie')
-      → NextResponse.next() + set-cookie 헤더 전파
-  → 클라이언트: 새 access_token 쿠키 저장, 페이지 정상 로드
-```
-
-### 2.3 refresh 실패 흐름
-
-```
-GET /guardian/dashboard
-  → proxy.ts: access_token 없음, refresh_token 있음
-    → POST /api/auth/refresh
-      → FastAPI /refresh → 401 (refresh_token 만료)
-    → proxy.ts: refreshRes.ok === false
-    → /login redirect
-```
-
----
-
-## 3. 파일별 설계
-
-### 3.1 `app/api/auth/login/route.ts` — 수정
-
-**변경 내용**: refresh_token, user_role의 maxAge를 1시간 → 7일로 분리
-
-```typescript
-// 변경 전
-const COOKIE_OPTIONS = {
-  httpOnly: true,
-  secure: process.env.NODE_ENV === 'production',
-  sameSite: 'lax' as const,
-  path: '/',
-  maxAge: 60 * 60, // 모두 1시간
-}
-
-// 변경 후
-const BASE_COOKIE_OPTIONS = {
-  httpOnly: true,
-  secure: process.env.NODE_ENV === 'production',
-  sameSite: 'lax' as const,
-  path: '/',
-}
-
-const ACCESS_TOKEN_MAX_AGE = 60 * 60            // 1시간
-const REFRESH_TOKEN_MAX_AGE = 60 * 60 * 24 * 7 // 7일
-
-response.cookies.set('access_token', responseData.access_token, {
-  ...BASE_COOKIE_OPTIONS,
-  maxAge: ACCESS_TOKEN_MAX_AGE,
-})
-response.cookies.set('refresh_token', responseData.refresh_token, {
-  ...BASE_COOKIE_OPTIONS,
-  maxAge: REFRESH_TOKEN_MAX_AGE,
-})
-response.cookies.set('user_role', responseData.role, {
-  ...BASE_COOKIE_OPTIONS,
-  maxAge: REFRESH_TOKEN_MAX_AGE,
-})
-```
-
-### 3.2 `app/api/auth/refresh/route.ts` — 신규
-
-```typescript
-// Design Ref: §3.2 — Node.js Runtime에서 FastAPI /refresh 호출
-// Plan SC: SC-01, SC-03
-import { cookies } from 'next/headers'
-import { NextResponse } from 'next/server'
-
-interface FastApiRefreshResponse {
-  access_token: string
-  token_type: string
-}
-
-export async function POST() {
-  const cookieStore = await cookies()
-  const refreshToken = cookieStore.get('refresh_token')?.value
-
-  if (!refreshToken) {
-    return NextResponse.json({ error: 'No refresh token' }, { status: 401 })
-  }
-
-  const res = await fetch(`${process.env.API_URL}/refresh`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${refreshToken}`,
-    },
-  })
-
-  if (!res.ok) {
-    return NextResponse.json({ error: 'Refresh failed' }, { status: 401 })
-  }
-
-  const data = (await res.json()) as FastApiRefreshResponse
-
-  const response = NextResponse.json({ ok: true })
-  response.cookies.set('access_token', data.access_token, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
-    path: '/',
-    maxAge: 60 * 60, // 1시간
-  })
-  return response
-}
-```
-
-**FastAPI 미구현 시 동작**: `process.env.API_URL/refresh`가 없거나 404 → `res.ok === false` → 401 반환 → proxy.ts가 /login으로 redirect. Graceful 처리.
-
-### 3.3 `proxy.ts` — 수정
-
-```typescript
-// Design Ref: §3.3 — silent refresh + role 기반 redirect
-// Plan SC: SC-01, SC-02, SC-04
-import { NextResponse, type NextRequest } from 'next/server'
-
-const ROLE_ROUTES: Record<string, string> = {
-  guardian: '/guardian',
-  caregiver: '/caregiver',
-  admin: '/admin',
-}
-
-export async function proxy(request: NextRequest) {
-  const { pathname } = request.nextUrl
-  const accessToken = request.cookies.get('access_token')?.value
-  const refreshToken = request.cookies.get('refresh_token')?.value
-
-  if (!accessToken) {
-    // refresh_token 없음 → /login
-    if (!refreshToken) {
-      return NextResponse.redirect(new URL('/login', request.url))
-    }
-
-    // refresh_token으로 갱신 시도
-    const refreshUrl = new URL('/api/auth/refresh', request.url)
-    const refreshRes = await fetch(refreshUrl.toString(), {
-      method: 'POST',
-      headers: {
-        Cookie: request.headers.get('cookie') ?? '',
-      },
-    })
-
-    if (!refreshRes.ok) {
-      return NextResponse.redirect(new URL('/login', request.url))
-    }
-
-    // 갱신 성공: 목적지 결정
-    const destination =
-      pathname === '/dashboard'
-        ? (() => {
-            const role = request.cookies.get('user_role')?.value
-            return new URL((role && ROLE_ROUTES[role]) ?? '/login', request.url)
-          })()
-        : null
-
-    const response = destination
-      ? NextResponse.redirect(destination)
-      : NextResponse.next()
-
-    // set-cookie 전파 (새 access_token)
-    const setCookie = refreshRes.headers.get('set-cookie')
-    if (setCookie) {
-      response.headers.set('set-cookie', setCookie)
-    }
-
-    return response
-  }
-
-  // access_token 있음 — 기존 로직
-  if (pathname === '/dashboard') {
-    const role = request.cookies.get('user_role')?.value
-    const dest = (role && ROLE_ROUTES[role]) ?? '/login'
-    return NextResponse.redirect(new URL(dest, request.url))
-  }
-
-  return NextResponse.next()
-}
-
-export const config = {
-  matcher: [
-    '/dashboard',
-    '/guardian/:path*',
-    '/caregiver/:path*',
-    '/admin/:path*',
-  ],
-}
+    → accessToken 있음 + isJwtExpired() → true
+      → refresh 시도 (기존 logic)
+        ├─ ok → access_token 갱신 → NextResponse.next()
+        └─ !ok → /login redirect
+    → accessToken 있음 + isJwtExpired() → false
+      → NextResponse.next() (기존)
+    → accessToken 없음
+      → refresh 시도 (기존)
 ```
 
 ---
 
 ## 4. 타입 정의
 
-신규 타입 없음. 기존 `FastApiTokenResponse` 그대로 유지, `FastApiRefreshResponse`는 Route Handler 내부에만 정의.
+```typescript
+// src/shared/api/types.ts — 변경 없음
+export interface ApiError {
+  status: number;
+  message: string;
+}
+
+// ApiClient 타입 — api 객체 인터페이스 (client.ts에서 추론)
+export type ApiClient = typeof api;
+```
 
 ---
 
@@ -275,126 +253,88 @@ export const config = {
 
 | 케이스 | 처리 방법 |
 |--------|----------|
-| refresh_token 쿠키 존재하나 FastAPI에서 만료로 판단 | FastAPI 401 → route.ts 401 → proxy.ts /login redirect |
-| set-cookie 헤더 없음 (route.ts 버그) | `setCookie`가 null → 헤더 세팅 스킵, NextResponse.next() 반환 — access_token 없이 진행되어 다음 요청에서 다시 refresh 시도 |
-| /api/auth/refresh 자체가 매처에 포함? | `config.matcher`에 `/api/*` 없음 → 무한 루프 없음 |
-| /dashboard에서 refresh 성공 시 redirect | user_role 쿠키는 7일 유효 → refresh 후에도 role redirect 정상 동작 |
-| 동시 탭에서 동시 refresh 요청 | Edge Middleware는 요청별 독립 — 동시 refresh 요청이 여러 번 성공할 수 있음. FastAPI가 동일 refresh_token에 동일 access_token을 반환하면 문제 없음 |
+| atob padding 오류 (invalid base64) | try/catch → `return true` (만료로 간주) → refresh 시도 |
+| JWT payload에 exp 없음 | `if (!decoded.exp) return false` — 만료 체크 건너뜀 |
+| 401 retry 무한 루프 | `_retried=true` 플래그 → 2번째 401은 그대로 반환 |
+| Server Component에서 api.* 사용 | `window` 없음 → 런타임 에러. server.ts 사용 (기존 분리 유지) |
+| axios import 잔존 파일 | tsc 에러로 감지 → `pnpm tsc --noEmit` 검증 |
 
 ---
 
 ## 6. 보안 고려사항
 
-- **refresh_token httpOnly**: JS로 접근 불가 — XSS 방어 유지
-- **sameSite: 'lax'**: CSRF 기본 보호
-- **proxy.ts에서 Cookie 헤더 전달**: `request.headers.get('cookie')`로 전체 전달 — refresh_token 이외 쿠키도 포함되나 route.ts에서 `refresh_token`만 추출하므로 안전
-- **새 access_token만 응답**: route.ts가 refresh_token을 rotation하지 않음 (단순화) — 추후 rotation 추가 가능
+- **JWT decode는 검증 아님**: `atob` 디코드는 서명 검증 없음 — `exp` 조기 감지용으로만 사용
+- **실제 서명 검증**: FastAPI 서버에서 처리 (변경 없음)
+- **clock skew 10초 버퍼**: 서버/클라이언트 시간 차이로 인한 오감지 방지
+- **window.location.href**: Client Component 전용 — proxy.ts가 Server 측 redirect 담당
 
 ---
 
-## 7. FastAPI 백엔드 계약 (Backend Contract)
-
-```
-POST /refresh
-Headers:
-  Authorization: Bearer <refresh_token>
-  Content-Type: application/json
-
-Response 200:
-  { "access_token": "string", "token_type": "bearer" }
-
-Response 401:
-  { "detail": "Could not validate credentials" }
-  또는 { "detail": "Token expired" }
-```
-
-백엔드 미구현 시 stub 처리 방법:
-```python
-# FastAPI stub
-@router.post("/refresh")
-async def refresh_token():
-    raise HTTPException(status_code=401, detail="Not implemented")
-```
-→ proxy.ts가 401 수신 → /login redirect (graceful)
-
----
-
-## 8. 성공 기준 검증 매핑
+## 7. 성공 기준 검증 매핑
 
 | Plan SC | 구현 위치 | 검증 방법 |
 |---------|----------|----------|
-| SC-01: access_token 만료 + refresh 있음 → 성공 | proxy.ts:13-35 | DevTools에서 access_token 쿠키 삭제 후 /guardian 접근 |
-| SC-02: 둘 다 없음 → /login | proxy.ts:15-17 | 모든 쿠키 삭제 후 /guardian 접근 |
-| SC-03: 쿠키 maxAge 분리 | login/route.ts | DevTools 쿠키 만료시간 확인 |
-| SC-04: FastAPI 미구현 시 /login | refresh/route.ts:20-22 | mock 401 테스트 |
-| SC-05: tsc 에러 없음 | 전체 | `pnpm tsc --noEmit` |
+| SC-01: proxy.ts JWT 만료 체크 | `proxy.ts` isJwtExpired() | 코드 검토 + 만료 JWT 시나리오 |
+| SC-02: AppShell /api/auth/me (axios 없이) | `client.ts` api.get | 코드 검토 |
+| SC-03: AppHeader /api/auth/logout (axios 없이) | `client.ts` api.post | 코드 검토 |
+| SC-04: tsc 에러 없음 | 전체 | `pnpm tsc --noEmit` |
+| SC-05: axios 없음 | `package.json` | node_modules 확인 |
 
 ---
 
-## 9. 의존성
+## 8. 의존성
 
-신규 패키지 없음. 기존 의존성만 사용:
-- `next/server`: `NextRequest`, `NextResponse` (proxy.ts)
-- `next/headers`: `cookies()` (route.ts)
+**제거:**
+- `axios` 패키지
+
+**신규 추가:** 없음 (native fetch 사용)
+
+**유지:**
+- `next/server` — proxy.ts
+- `next/headers` — refresh/route.ts (변경 없음)
 
 ---
 
-## 10. 미결 사항
+## 9. 미결 사항
 
 | # | 항목 | 결정 필요자 |
 |---|------|------------|
-| M-01 | FastAPI `/refresh` 엔드포인트 구현 | 백엔드 팀 |
-| M-02 | refresh_token rotation 여부 | 보안 정책 |
-| M-03 | refresh 실패 시 `/login?expired=true` 쿼리 파라미터 추가 여부 | UX 결정 |
+| M-01 | AppShell/AppHeader에 `setNavigateToLogin` 호출 존재 여부 확인 | 구현 시 파일 읽고 확인 |
+| M-02 | client.ts `ApiClient` 타입 export 현황 | index.ts 읽고 확인 |
 
 ---
 
-## 11. Implementation Guide
+## 10. Implementation Guide
 
-### 11.1 구현 순서
-
-```
-1. app/api/auth/login/route.ts 수정  (maxAge 분리)
-2. app/api/auth/refresh/route.ts 신규 생성
-3. proxy.ts 수정 (silent refresh 로직)
-4. pnpm tsc --noEmit 검증
-5. 수동 테스트 (DevTools 쿠키 조작)
-```
-
-### 11.2 테스트 시나리오
+### 10.1 구현 순서
 
 ```
-T1: 정상 로그인 → DevTools 쿠키 확인
-  - access_token: 약 1시간 후 만료
-  - refresh_token: 약 7일 후 만료
-
-T2: access_token 수동 삭제 → /guardian 새로고침
-  - refresh_token 있으면 → 페이지 정상 로드 + access_token 재발급 확인
-  - (FastAPI 미구현 시) → /login redirect
-
-T3: access_token + refresh_token 모두 삭제 → /guardian 접근
-  - /login redirect 확인
-
-T4: /dashboard → role별 redirect 확인
-  - access_token 있음: 기존 동작 유지
-  - access_token 없음, refresh 성공: role로 redirect
+1. src/shared/api/errors.ts   (AxiosError 제거 → parseFetchError)
+2. src/shared/api/client.ts   (axios → clientFetch + api 객체)
+3. src/shared/api/index.ts    (setNavigateToLogin 제거)
+4. AppShell.tsx / AppHeader.tsx  (setNavigateToLogin 호출 제거 확인)
+5. proxy.ts                   (isJwtExpired 추가)
+6. pnpm remove axios          (package.json 갱신)
+7. pnpm tsc --noEmit          (검증)
 ```
 
-### 11.3 Session Guide
+### 10.2 Session Guide
 
 **Module Map:**
 
 | 모듈 | 파일 | 작업 |
 |------|------|------|
-| M1: login maxAge | `app/api/auth/login/route.ts` | COOKIE_OPTIONS 분리 (3줄 변경) |
-| M2: refresh Route | `app/api/auth/refresh/route.ts` | 신규 파일 (30줄) |
-| M3: proxy silent refresh | `proxy.ts` | silent refresh 로직 추가 (20줄 변경) |
+| M1: errors.ts | `src/shared/api/errors.ts` | AxiosError → parseFetchError |
+| M2: client.ts + index.ts | `src/shared/api/client.ts`, `index.ts` | axios → fetch wrapper |
+| M3: AppShell + AppHeader | `src/widgets/app-shell/ui/AppShell.tsx`, `AppHeader.tsx` | setNavigateToLogin 제거 확인 |
+| M4: proxy.ts | `proxy.ts` | isJwtExpired() 추가 |
+| M5: package.json + tsc | `package.json` | pnpm remove axios + 검증 |
 
 **추천 세션 분할:**
-- **Single Session**: M1 + M2 + M3 모두 — 총 변경량 적음, 한 세션에 완료 권장
+- **Single Session**: M1 → M2 → M3 → M4 → M5 — 전체 변경량 적음, 한 세션 완료 권장
 
 ```bash
-/pdca do auth-refresh-token           # 전체 범위
-/pdca do auth-refresh-token --scope M1,M2  # Route Handler 먼저
-/pdca do auth-refresh-token --scope M3     # proxy.ts 나중에
+/pdca do auth-refresh-token              # 전체 범위
+/pdca do auth-refresh-token --scope M1,M2  # shared/api 먼저
+/pdca do auth-refresh-token --scope M4,M5  # proxy.ts + axios 제거 나중에
 ```

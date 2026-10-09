@@ -3,6 +3,20 @@
 // Next.js 16: middleware.ts → proxy.ts, export function proxy
 import { NextResponse, type NextRequest } from "next/server";
 
+// Plan SC: SC-01 — JWT expiry proactive check (Edge Runtime, 라이브러리 없이)
+function isJwtExpired(token: string): boolean {
+  try {
+    const payload = token.split(".")[1];
+    const padded = payload + "=".repeat((4 - (payload.length % 4)) % 4);
+    const decoded = JSON.parse(atob(padded)) as { exp?: number };
+    if (!decoded.exp) return false;
+    // 10초 클록 스큐 버퍼: 서버/클라이언트 시간 차이 흡수
+    return decoded.exp * 1000 < Date.now() - 10_000;
+  } catch {
+    return true; // decode 실패 → 만료로 간주 → refresh 시도 (안전 방향)
+  }
+}
+
 const ROLE_ROUTES: Record<string, string> = {
   guardian: "/guardian",
   caregiver: "/caregiver",
@@ -20,7 +34,7 @@ export async function proxy(request: NextRequest) {
   const accessToken = request.cookies.get("access_token")?.value;
   const refreshToken = request.cookies.get("refresh_token")?.value;
 
-  if (!accessToken) {
+  if (!accessToken || isJwtExpired(accessToken)) {
     // refresh_token 없음 → /login
     if (!refreshToken) {
       return NextResponse.redirect(new URL("/login", request.url));
