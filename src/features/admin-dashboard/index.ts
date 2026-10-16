@@ -5,6 +5,7 @@ export { fetchAllSchedules } from "./api/fetchAllSchedules";
 
 // Client helpers (UI 컴포넌트에서 import)
 export { deactivateUser } from "./api/deactivateUser";
+export { fetchSeniorsClient } from "./api/fetchSeniorsClient";
 export { createSenior, updateSenior, deleteSenior } from "./api/seniors";
 export {
   createSchedule,

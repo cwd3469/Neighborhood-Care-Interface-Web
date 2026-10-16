@@ -1,10 +1,11 @@
 "use client";
 // Design Ref: §4.2 — 보호자 등록 모달
 // Plan SC: SC-02, SC-04, SC-05
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { createUser } from "../api/createUser";
+import { fetchSeniorsClient } from "../api/fetchSeniorsClient";
 import { AddressField } from "@shared/ui";
 
 interface Props {
@@ -17,7 +18,7 @@ interface GuardianFormValues {
   username: string;
   password: string;
   phone?: string;
-  senior_name: string;
+  senior_ids: number[];
   relationship: "자녀" | "배우자" | "형제/자매" | "부모" | "기타";
   address?: string;
   emergency_contact?: string;
@@ -38,6 +39,12 @@ export function GuardianRegisterModal({ open, onClose }: Props) {
     formState: { errors },
   } = useForm<GuardianFormValues>();
 
+  const { data: seniors = [] } = useQuery({
+    queryKey: ["seniors"],
+    queryFn: fetchSeniorsClient,
+    enabled: open,
+  });
+
   const mutation = useMutation({
     mutationFn: (data: GuardianFormValues) =>
       createUser({
@@ -46,7 +53,7 @@ export function GuardianRegisterModal({ open, onClose }: Props) {
         password: data.password,
         full_name: data.full_name,
         phone: data.phone,
-        senior_name: data.senior_name,
+        senior_ids: data.senior_ids.map(Number),
         relationship: data.relationship,
         address: data.address,
         emergency_contact: data.emergency_contact,
@@ -149,20 +156,34 @@ export function GuardianRegisterModal({ open, onClose }: Props) {
 
           {/* 보호자 전용 필드 */}
           <div className="flex flex-col gap-1">
-            <label
-              htmlFor="g-senior_name"
-              className="text-sm font-medium text-gray-700"
-            >
-              담당 어르신 이름 *
+            <label className="text-sm font-medium text-gray-700">
+              담당 어르신 *{" "}
+              <span className="text-xs text-gray-400">(복수 선택 가능)</span>
             </label>
-            <input
-              id="g-senior_name"
-              className={inputCls}
-              {...register("senior_name", { required: "어르신 이름을 입력하세요." })}
-            />
-            {errors.senior_name && (
+            {seniors.length === 0 ? (
+              <p className="text-sm text-gray-400">등록된 어르신이 없습니다.</p>
+            ) : (
+              <div className="rounded-md border border-gray-300 divide-y max-h-40 overflow-y-auto">
+                {seniors.map((s) => (
+                  <label
+                    key={s.id}
+                    className="flex items-center gap-2 px-3 py-2 hover:bg-gray-50 cursor-pointer text-sm text-gray-700"
+                  >
+                    <input
+                      type="checkbox"
+                      value={s.id}
+                      {...register("senior_ids", {
+                        required: "어르신을 1명 이상 선택하세요.",
+                      })}
+                    />
+                    {s.full_name}
+                  </label>
+                ))}
+              </div>
+            )}
+            {errors.senior_ids && (
               <p role="alert" className="text-sm text-red-600">
-                {errors.senior_name.message}
+                {errors.senior_ids.message}
               </p>
             )}
           </div>

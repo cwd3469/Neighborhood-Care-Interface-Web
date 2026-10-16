@@ -16,7 +16,9 @@ export default async function GuardianCaregiversPage() {
         <ul className="divide-y rounded-lg border bg-white">
           {caregivers.map((c) => (
             <li key={c.id} className="px-4 py-3">
-              <p className="font-medium text-gray-900">{c.full_name ?? c.username}</p>
+              <p className="font-medium text-gray-900">
+                {c.full_name ?? c.username}
+              </p>
               <p className="text-sm text-gray-500">{c.phone ?? "-"}</p>
             </li>
           ))}

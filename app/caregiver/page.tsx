@@ -31,7 +31,9 @@ export default async function CaregiverPage() {
 
       {/* 오늘 방문 일정 요약 */}
       <section className="space-y-3">
-        <h2 className="text-xl font-semibold text-gray-800">오늘의 방문 일정</h2>
+        <h2 className="text-xl font-semibold text-gray-800">
+          오늘의 방문 일정
+        </h2>
         {schedules.length === 0 ? (
           <p className="text-gray-500">오늘 예정된 방문 일정이 없습니다.</p>
         ) : (

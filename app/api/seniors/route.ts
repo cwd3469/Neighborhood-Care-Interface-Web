@@ -1,7 +1,16 @@
-// Design Ref: §4.2 — SeniorCreate POST 프록시
+// Design Ref: §4.2 — Senior CRUD 프록시
 // Plan SC: SC-04
 import { NextResponse } from "next/server";
 import { SERVER_API_URL, getServerApiHeaders } from "@shared/api/server";
+
+export async function GET() {
+  const res = await fetch(`${SERVER_API_URL}/seniors`, {
+    headers: await getServerApiHeaders(),
+    cache: "no-store",
+  });
+  if (!res.ok) return NextResponse.json([], { status: res.status });
+  return NextResponse.json(await res.json());
+}
 
 export async function POST(request: Request) {
   const body = await request.json();

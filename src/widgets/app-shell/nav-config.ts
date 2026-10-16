@@ -12,7 +12,6 @@ export const NAV_ITEMS: Record<ROLE, NavItem[]> = {
     { label: "대시보드", href: "/guardian" },
     { label: "건강기록 조회", href: "/guardian/records" },
     { label: "방문일정", href: "/guardian/schedules" },
-    { label: "케어기버 목록", href: "/guardian/caregivers" },
   ],
   caregiver: [
     { label: "대시보드", href: "/caregiver" },

@@ -13,7 +13,7 @@ interface BaseUserFields {
 
 interface GuardianFields {
   role: "guardian";
-  senior_name: string;
+  senior_ids: number[];
   relationship: "자녀" | "배우자" | "형제/자매" | "부모" | "기타";
   address?: string;
   emergency_contact?: string;

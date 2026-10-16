@@ -5,7 +5,8 @@
       "Bash(pnpm build:*)",
       "Bash(pnpm tsc:*)",
       "Skill(bkit:pdca)",
-      "Bash(pnpm add:*)"
+      "Bash(pnpm add:*)",
+      "Bash(pnpm -v)"
     ]
   }
 }
