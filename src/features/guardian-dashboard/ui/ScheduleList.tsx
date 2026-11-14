@@ -1,7 +1,6 @@
 // Design Ref: §6 — 방문 일정 목록, status=scheduled 필터
 // Plan SC: SC-05
-// Plan Known Constraint: caregiver_id만 표시 (API에 caregiver_name 없음)
-// TODO: 백엔드 ScheduleResponse에 caregiver_name 추가되면 교체
+// caregiver_name 없으면(구버전 API) caregiver_id로 대체 표시
 import type { ScheduleResponse } from "../api/schedules";
 
 const STATUS_LABEL: Record<string, string> = {
@@ -38,7 +37,7 @@ export function ScheduleList({ schedules }: { schedules: ScheduleResponse[] }) {
               </div>
               <div className="text-right">
                 <span className="text-gray-400 text-xs">
-                  요양사 #{s.caregiver_id}
+                  {s.caregiver_name ?? `요양사 #${s.caregiver_id}`}
                 </span>
                 <span className="ml-2 inline-block px-2 py-0.5 text-xs rounded-full bg-blue-50 text-blue-600">
                   {STATUS_LABEL[s.status] ?? s.status}

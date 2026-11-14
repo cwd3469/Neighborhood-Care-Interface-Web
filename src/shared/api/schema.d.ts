@@ -411,6 +411,8 @@ export interface components {
       senior_id: number;
       /** Caregiver Id */
       caregiver_id: number;
+      /** Caregiver Name */
+      caregiver_name?: string | null;
       /**
        * Scheduled Date
        * Format: date
