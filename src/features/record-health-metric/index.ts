@@ -3,5 +3,5 @@
 //
 // 예시 (기능 구현 시 교체):
 // export { RecordHealthMetricForm } from './ui/RecordHealthMetricForm'
-// FHIR Observation POST 로직은 api/ 세그먼트에 — 직접 구현 필요 (TODO)
+// 아직 비어 있는 슬라이스 — 계획은 docs/project-plan.md "8. 향후 계획" 참고
 export {};

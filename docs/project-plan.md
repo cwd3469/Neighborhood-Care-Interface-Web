@@ -68,3 +68,13 @@
 - 진행 상황을 매번 처음부터 요약하지 않기 — 이 프로젝트 내 대화 맥락을 이어서 작업
 - 백엔드 핵심 도메인 로직(인증/인가, FHIR 매핑 등)을 AI가 통째로 생성하게 두지 않기 — TODO 방식 유지
 - 
+
+## 8. 향후 계획 (마무리 범위 밖)
+
+코드에 남아 있던 TODO 주석을 여기로 옮겼다. 지금 동작에는 영향이 없다.
+
+| 항목 | 현재 상태 | 하려면 필요한 것 |
+| --- | --- | --- |
+| 활력징후 단독 입력 (`features/record-health-metric`) | 빈 슬라이스. 방문 기록 작성은 `caregiver-dashboard/api/createRecord`가 담당하고, 활력징후는 기록 저장 시 백엔드가 자동 추출 | 백엔드에 Observation 단독 생성 API 추가 → `api/` 세그먼트에 POST, `ui/`에 입력 폼 |
+| 공통 UI 컴포넌트 (`shared/ui`) | `AddressField`만 있음. 버튼·인풋·카드는 각 화면에서 Tailwind로 직접 작성 | Button·Input·Card 추출 후 기존 화면 교체 (또는 shadcn/ui 도입 후 re-export) |
+| 보류 항목 | Alembic(마이그레이션), Sentry(에러 로깅), 카카오 알림톡, 바디캠 | 마무리 이후 별도 계획 |
